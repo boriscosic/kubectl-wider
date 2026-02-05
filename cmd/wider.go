@@ -20,6 +20,7 @@ type PodWithWider struct {
 }
 
 type Options struct {
+	Context       string
 	Namespace     string
 	OutputFormat  string
 	LabelSelector string
@@ -30,6 +31,12 @@ type Options struct {
 
 func (o *Options) Complete() error {
 	configOverrides := &clientcmd.ConfigOverrides{}
+	
+	// Override if context is specified
+	if o.Context != "" {
+		configOverrides.CurrentContext = o.Context
+	}
+	
 	kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(o.ConfigFlags, configOverrides)
 
 	config, err := kubeConfig.ClientConfig()
@@ -106,6 +113,7 @@ Examples:
 		},
 	}
 
+	cmd.Flags().StringVarP(&opts.Context, "context", "", "", "Context to query (defaults to current context)")
 	cmd.Flags().StringVarP(&opts.Namespace, "namespace", "n", "", "Namespace to query (defaults to current context namespace)")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "o", "", "Output format. One of: (json, yaml, custom-columns) (e.g., custom-columns=\"NAME:.pod.metadata.name,NODE:.node.metadata.name,OS:.node.metadata.labels.kubernetes\\.io/os\")")
 	cmd.Flags().BoolVarP(&opts.AllNamespaces, "all-namespaces", "A", false, "Query all namespaces")
